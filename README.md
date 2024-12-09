@@ -60,6 +60,7 @@ The software system is designed to facilitate efficient wireless communication, 
     •Alerts for Low Battery:<br>
     If the battery voltage drops below a predefined safety threshold, the system generates a "Battery Low!" alert.
 4. Task Assignment and Reallocation<br>
+
     User-Defined Commands: Users can input specific commands via XCTU software to assign tasks to the robots. Examples include:<br>
     Input 1: Assign Bot 1 a specific task, such as rotating or other predefined actions.<br>
     Input 2: Assign Bot 2 its designated task.<br>
@@ -69,23 +70,27 @@ The software system is designed to facilitate efficient wireless communication, 
 To achieve seamless wireless communication between the two Pololu 3pi bots and the laptop, we utilized the XBee S2C modules. The system was configured with one module as the Coordinator and the other two modules as Routers, following the process described below.<br>
 
 Configuration Process:<br>
-1.Hardware Setup:<br>
-    The XBee S2C modules were connected to USB XBee adapters and linked to the laptop via USB ports. XCTU software was used to configure the modules.<br>
-    The Coordinator and Router roles were assigned to the modules using XCTU.<br>
-2.Coordinator Configuration: The first module was set as the Coordinator with the following parameters:<br>
-    PAN ID: 1234 (common network ID for all modules).<br>
-    CE (Coordinator Enable): Enabled.<br>
-    Destination Address DL: Set to FFFF (broadcast mode to communicate with all devices in the PAN ID).<br>
-    The configuration was saved by clicking the "Write" button in XCTU.<br>
+1. Hardware Setup:<br>
+    • The XBee S2C modules were connected to USB XBee adapters and linked to the laptop via USB ports. XCTU software was used to configure the modules.<br>
+    • The Coordinator and Router roles were assigned to the modules using XCTU.<br>
+
+2. Coordinator Configuration: 
+        The first module was set as the Coordinator with the following parameters:<br>
+        • PAN ID: 1234 (common network ID for all modules).<br>
+        • CE (Coordinator Enable): Enabled.<br>
+        • Destination Address DL: Set to FFFF (broadcast mode to communicate with all devices in the PAN ID).<br>
+        • The configuration was saved by clicking the "Write" button in XCTU.<br>
 3.	Router Configuration: The other two modules were configured as Routers with the following parameters:<br>
-	PAN ID: 1234 (same as the Coordinator).<br>
-	CE (Coordinator Enable): Disabled.<br>
-	Destination Address DL: Defaulted to 0 (addressing the Coordinator).<br>
-	Configuration was saved for each module.<br>
+• PAN ID: 1234 (same as the Coordinator).<br>
+• CE (Coordinator Enable): Disabled.<br>
+• Destination Address DL: Defaulted to 0 (addressing the Coordinator).<br>
+• Configuration was saved for each module.<br>
+
 4.	Testing Communication:<br>
-	Two instances of XCTU software were opened on the laptop, one for the Coordinator and the other for a Router.<br>
-	The Terminal mode in XCTU was used to test communication between the devices. Messages typed in one module's terminal were successfully transmitted and displayed on the other module's terminal, confirming proper configuration and functionality.<br>
-	The communication was reliable, with transmitted messages appearing in blue and received messages in red, as seen in the attached screenshots.<br>
+
+    • Two instances of XCTU software were opened on the laptop, one for the Coordinator and the other for a Router.<br>
+    • The Terminal mode in XCTU was used to test communication between the devices. Messages typed in one module's terminal were successfully transmitted and displayed on the other module's terminal, confirming proper configuration and functionality.<br>
+    • The communication was reliable, with transmitted messages appearing in blue and received messages in red, as seen in the attached screenshots.<br>
 
 Below screenshots show the configuration of xbee modules:<br>
 
@@ -160,16 +165,15 @@ Below screenshots show the configuration of xbee modules:<br>
 
 During the configuration and testing of the XBee communication with the ATmega328P microcontroller, we encountered a significant issue with the baud rate. Despite configuring the system to operate at a baud rate of <b>115200</b>, we observed an error in data transmission. The data received was inconsistent and appeared to be sent at approximately <b>140000 baud</b>, leading to about <b>20% error in UART communication.</b>
 
-<b>Root Cause:</b>
+• <b>Root Cause:</b>
 
 After thorough debugging, we realized that the ATmega328P microcontroller was operating at a 20 MHz clock frequency instead of the expected 16 MHz. The incorrect assumption of the clock frequency had resulted in inaccurate prescaler calculations for the UART baud rate, causing the mismatch.
 
-<b>Resolution</b>
+• <b>Resolution</b>:To resolve this issue:
 
+• <b>Prescaler Adjustment:</b> We recalculated the prescaler value for the UART baud rate based on the 20 MHz clock frequency, ensuring accurate baud rate settings.
 
-To resolve this issue:
-<b>1.Prescaler Adjustment:</b> We recalculated the prescaler value for the UART baud rate based on the 20 MHz clock frequency, ensuring accurate baud rate settings.
-•	Verification with <b>Saleae Logic Analyzer:</b>
+• Verification with <b>Saleae Logic Analyzer:</b>
     We used a Saleae Logic Analyzer to analyze the transmitted and received UART signals.
     The logic analyzer allowed us to confirm the actual baud rate being transmitted and verify that the adjusted prescaler correctly aligned the transmission rate with the configured baud rate of 115200.
 
@@ -178,13 +182,15 @@ To resolve this issue:
 
 ![alt text](Images/4_PowerManagement.png)
 
-<p>The power management system in the 3pi robot is a sophisticated design that ensures optimal performance for the device, even as battery voltage fluctuates during operation. The system addresses the challenge of inconsistent battery voltage from four AAA cells, which can range between 3.5 V and 5.5 V (or even up to 6 V for alkaline batteries). This variability makes direct voltage regulation to 5 V impractical. To overcome this, the 3pi employs a dual-regulation approach, utilizing both a switching regulator and a linear regulator.</p>
-<p>First, the switching regulator boosts the battery voltage to a stable 9.25 V (Vboost), which is used to power the motors and IR LEDs in the line sensors. Then, a linear regulator reduces Vboost to 5 V (VCC), supplying the microcontroller and digital circuitry. This dual-regulation method provides several advantages. The motors benefit from higher voltage and, consequently, more power without increased current demand, enabling consistent performance regardless of battery depletion. Additionally, the regulated voltage ensures that motor speeds remain constant, simplifying programming tasks such as timed turns. Furthermore, the higher voltage enables the IR LEDs to be powered in series, minimizing power consumption.</p>
-<p>The system also incorporates a voltage monitoring circuit to help track battery status. This is achieved using a voltage divider, which scales the battery voltage to a level safely below the microcontroller's 5 V maximum analog input. This scaled voltage is fed to an ADC input and converted into the actual battery voltage using a simple formula. We monitored the battery voltage by a function, read_battery_millivolts_3pi(), that automates this process by averaging ten ADC samples and returning the battery voltage in millivolts.</p>
+<p>• The power management system in the 3pi robot is a sophisticated design that ensures optimal performance for the device, even as battery voltage fluctuates during operation. The system addresses the challenge of inconsistent battery voltage from four AAA cells, which can range between 3.5 V and 5.5 V (or even up to 6 V for alkaline batteries). This variability makes direct voltage regulation to 5 V impractical. To overcome this, the 3pi employs a dual-regulation approach, utilizing both a switching regulator and a linear regulator.</p>
+
+<p>• First, the switching regulator boosts the battery voltage to a stable 9.25 V (Vboost), which is used to power the motors and IR LEDs in the line sensors. Then, a linear regulator reduces Vboost to 5 V (VCC), supplying the microcontroller and digital circuitry. This dual-regulation method provides several advantages. The motors benefit from higher voltage and, consequently, more power without increased current demand, enabling consistent performance regardless of battery depletion. Additionally, the regulated voltage ensures that motor speeds remain constant, simplifying programming tasks such as timed turns. Furthermore, the higher voltage enables the IR LEDs to be powered in series, minimizing power consumption.</p>
+
+<p>• The system also incorporates a voltage monitoring circuit to help track battery status. This is achieved using a voltage divider, which scales the battery voltage to a level safely below the microcontroller's 5 V maximum analog input. This scaled voltage is fed to an ADC input and converted into the actual battery voltage using a simple formula. We monitored the battery voltage by a function, read_battery_millivolts_3pi(), that automates this process by averaging ten ADC samples and returning the battery voltage in millivolts.</p>
 
 ![alt text](Images/5_PowerPin.png)
 
-In summary, the 3pi’s power management system ensures maximum performance until the battery is fully drained, offering regulated voltage for reliable operation of all components while monitoring battery health for proactive power management.
+• In summary, the 3pi’s power management system ensures maximum performance until the battery is fully drained, offering regulated voltage for reliable operation of all components while monitoring battery health for proactive power management.
 
 ## 9. Detailed Explaination of Hardware Implementation
 
@@ -192,16 +198,16 @@ In summary, the 3pi’s power management system ensures maximum performance unti
 
 The Pololu 3pi robot uses brushed DC motors with a gear ratio of 30:1, which are ideal for the lightweight and agile design of the 3pi robot. The details are as follows:<br>
 
-Motor Design and Characteristics:<br>
+### Motor Design and Characteristics:<br>
 •Brushed DC Motor: The motors operate with permanent magnets and electromagnetic coils, offering a reliable mechanism for the small and efficient Pololu 3pi.<br>
-•Key Specifications:<br>
-    Free-Running Speed: 700 rpm (rotations per minute) without any load.<br>
-    Free-Running Current: 60 mA, ensuring low power consumption during operation.<br>
-    Stall Torque: 6 oz-in (ounce-inches), providing sufficient force for the robot to overcome minor obstacles.<br>
-    Stall Current: 540 mA, which the motor draws under maximum load conditions.<br>
+#### Key Specifications:<br>
+• Free-Running Speed: 700 rpm (rotations per minute) without any load.<br>
+• Free-Running Current: 60 mA, ensuring low power consumption during operation.<br>
+• Stall Torque: 6 oz-in (ounce-inches), providing sufficient force for the robot to overcome minor obstacles.<br>
+• Stall Current: 540 mA, which the motor draws under maximum load conditions.<br>
 
-Gear Ratio and Torque:<br>
-•A 30:1 gear ratio is employed, which reduces the speed and increases the torque by a factor of 30. This is crucial for tasks like:<br>
+#### Gear Ratio and Torque:<br>
+• A 30:1 gear ratio is employed, which reduces the speed and increases the torque by a factor of 30. This is crucial for tasks like:<br>
     Precise movement during line-following.<br>
     Overcoming resistance from friction or uneven surfaces.<br>
 •The gear ratio ensures that even though the motor spins rapidly, the robot achieves smooth and controlled movements.
