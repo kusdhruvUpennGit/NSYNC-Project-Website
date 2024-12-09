@@ -300,3 +300,5 @@ Link to a video showing Motor and QTR sensors working together (Facing Calibrati
   [Link](https://drive.google.com/file/d/1ZaagUqCAhBXo545llPBmGqV77pNaJmeO/view?usp=drive_link)
 
 
+### 11.  Hardware Implementation
+
